@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 #include <iostream>
 #include <string>
+#include<cstring>
 using namespace std;
 
 struct user
@@ -130,11 +131,11 @@ int main()
 
             if(!fp)
                 break;
-            cout <<i+1<<"\t"<<users[i].loan_ID<<"\t"<<users[i].gender<<"\t"<<users[i].married<<"\t"
+            /*cout <<i+1<<"\t"<<users[i].loan_ID<<"\t"<<users[i].gender<<"\t"<<users[i].married<<"\t"
             <<users[i].dependent<<"\t"<<users[i].education<<"\t"<<users[i].employment<<"\t"
             <<users[i].applicantIncome<<"\t"<<users[i].coApplicantIncome<<"\t"
             <<users[i].amount<<"\t"<<users[i].loanTerm<<"\t"
-            <<users[i].credit_History<< setw (20)<<users[i].area<< setw (10)<<users[i].status <<endl;
+            <<users[i].credit_History<< setw (20)<<users[i].area<< setw (10)<<users[i].status <<endl;*/
             ++n;
             }
 
@@ -193,7 +194,7 @@ int main()
     //convert into a 2D array
     float data[n][13];
     for(i=0;i<n;i++){
-        data[i][0]=stof(users[i].loan_ID);
+        data[i][0]=atof(users[i].loan_ID.c_str());
         if(users[i].gender=="Male")
             data[i][1]=1;
         else
@@ -207,7 +208,7 @@ int main()
         if(users[i].dependent=="3+")
             data[i][3]=4;
         else
-            data[i][3]=stof(users[i].dependent);
+            data[i][3]=atof(users[i].dependent.c_str());
 
         if(users[i].education=="Graduate")
             data[i][4]=1;
@@ -219,11 +220,11 @@ int main()
         else
             data[i][5]=0;
 
-        data[i][6]=stof(users[i].applicantIncome);
-        data[i][7]=stof(users[i].coApplicantIncome);
-        data[i][8]=stof(users[i].amount);
-        data[i][9]=stof(users[i].loanTerm);
-        data[i][10]=stof(users[i].credit_History);
+        data[i][6]=atof(users[i].applicantIncome.c_str());
+        data[i][7]=atof(users[i].coApplicantIncome.c_str());
+        data[i][8]=atof(users[i].amount.c_str());
+        data[i][9]=atof(users[i].loanTerm.c_str());
+        data[i][10]=atof(users[i].credit_History.c_str());
 
         if(users[i].area=="Urban")
             data[i][11]=2;
@@ -237,15 +238,48 @@ int main()
         else
             data[i][12]=0;
 
+
+    }
+    cout<<"Gender,Married,Dependents,Education,Self_Employed,ApplicantIncome,CoapplicantIncome,LoanAmount,Loan_Amount_Term,Credit_History,Property_Area,Loan_Status";
     for(i=0;i<n;i++){
-        for(j=0;j<13;j++){
-            cout<<data[i][j]<<" ";
+        for(j=1;j<13;j++){
+           cout<<data[i][j]<<"\t";
         }
         cout<<"\n";
-    }
-    }
+   }
 
 
+float mean[13],percentage[13],entropy[13];
+
+//Mean
+int sum;
+for(j=0;j<13;j++){
+        sum=0;
+   // mean[i]=Mean(m,n,a,i);
+    for(i=0;i<n;i++)
+        sum=sum+data[i][j];
+
+    mean[j]=sum/(float)n;
+}
+cout<<"Mean: ";
+for(i=1;i<13;i++)
+    cout<<mean[i]<<" ";
+    cout<<endl;
+
+//Percentage
+int c;
+
+for(j=0;j<13;j++){
+        c=0;
+    for(i=0;i<n;i++){
+        if(data[i][j]<mean[j])
+            c++;
+    }
+    percentage[j]=(float)c/(float)n;
+}
+cout<<"Percentage: ";
+for(i=1;i<13;i++)
+    cout<<percentage[i]<<" ";
 
 
     //removing missing values:
