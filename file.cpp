@@ -21,6 +21,27 @@ struct user
     string status;              //dependent variable
 }users[1000];
 
+float minimum(float a[],int n){
+    int i;
+    float m=a[1];
+    for(i=1;i<n;i++){
+        if(a[i]<m)
+            m=a[i];
+    }
+return m;
+}
+
+void print(int n,float a[][13]){
+int i,j;
+
+for(i=0;i<n;i++){
+    for(j=0;j<13;j++){
+        cout<<a[i][j]<<" ";
+    }
+    cout<<"\n";
+    }
+}
+
 int mean(int a[],int n)
 {
     int i,sum=0;
@@ -240,14 +261,15 @@ int main()
 
 
     }
-    cout<<"Gender,Married,Dependents,Education,Self_Employed,ApplicantIncome,CoapplicantIncome,LoanAmount,Loan_Amount_Term,Credit_History,Property_Area,Loan_Status";
-    for(i=0;i<n;i++){
-        for(j=1;j<13;j++){
-           cout<<data[i][j]<<"\t";
-        }
-        cout<<"\n";
-   }
+    cout<<"Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
+//    for(i=0;i<n;i++){
+//        for(j=1;j<13;j++){
+//           cout<<data[i][j]<<"\t";
+//        }
+//        cout<<"\n";
+//   }
 
+print(n,data);
 
 float mean[13],percentage[13],entropy[13];
 
@@ -281,6 +303,17 @@ cout<<"Percentage: ";
 for(i=1;i<13;i++)
     cout<<percentage[i]<<" ";
 
+//Entropy
+for(i=1;i<13;i++){
+        entropy[i]=-(percentage[i]*log2(percentage[i])+(1-percentage[i])*log2(1-percentage[i]));
+    }
+
+cout<<"\nEntropy: ";
+for(i=1;i<13;i++)
+    cout<<entropy[i]<<" ";
+
+    float m=minimum(entropy,13);
+    cout<<"\nMinimum entropy: "<<m<<endl;
 
     //removing missing values:
         //we'll use the prior one from univariate analysis
