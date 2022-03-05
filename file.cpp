@@ -33,34 +33,34 @@ return m;
 
 void print(int n,float a[][13]){
 int i,j;
-
+cout<<"Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
 for(i=0;i<n;i++){
-    for(j=0;j<13;j++){
+    for(j=1;j<13;j++){
         cout<<a[i][j]<<" ";
     }
     cout<<"\n";
     }
 }
 
-int mean(int a[],int n)
+float mean(float a[][13],int n,int category)
 {
     int i,sum=0;
 
     for(i=0;i<n;i++)
     {
-        sum=sum+a[i];
+        sum=sum+a[i][category];
     }
 return sum/n;
 }
 
-int standardDeviation(int a[],int n)
+float standardDeviation(float a[][13],int n,int category)
 {
     int i,square=0,var;
 
     for(i=0;i<n;i++)
-        square+=a[i]*a[i];
+        square+=a[i][category]*a[i][category];
 
-    int avg=mean(a,n);
+    float avg=mean(a,n,category);
 
     var=(square/n)-avg*avg;
 
@@ -210,7 +210,7 @@ int main()
             x++;
     }
     rate=(float)x/(float)n*100.00;
-    cout<<"Re-payed doubt applicant:"<< rate<<"%"<<endl;
+    cout<<"Re-payed debt applicant:"<< rate<<"%"<<endl;
 
     //convert into a 2D array
     float data[n][13];
@@ -261,60 +261,15 @@ int main()
 
 
     }
-    cout<<"Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
-//    for(i=0;i<n;i++){
-//        for(j=1;j<13;j++){
-//           cout<<data[i][j]<<"\t";
-//        }
-//        cout<<"\n";
-//   }
+    float avgIncome=mean(data,n,6);
+    cout<<"Average applicant income: $"<<avgIncome<<endl;
 
-print(n,data);
+    float avgCAIncome=mean(data,n,7);
+    cout<<"Average Co applicant income: $"<<avgCAIncome<<endl;
 
-float mean[13],percentage[13],entropy[13];
+    float avgLoan=mean(data,n,8);
+    cout<<"Average Loan Amount: $"<<avgLoan<<endl;
 
-//Mean
-int sum;
-for(j=0;j<13;j++){
-        sum=0;
-   // mean[i]=Mean(m,n,a,i);
-    for(i=0;i<n;i++)
-        sum=sum+data[i][j];
-
-    mean[j]=sum/(float)n;
-}
-cout<<"Mean: ";
-for(i=1;i<13;i++)
-    cout<<mean[i]<<" ";
-    cout<<endl;
-
-//Percentage
-int c;
-
-for(j=0;j<13;j++){
-        c=0;
-    for(i=0;i<n;i++){
-        if(data[i][j]<mean[j])
-            c++;
-    }
-    percentage[j]=(float)c/(float)n;
-}
-cout<<"Percentage: ";
-for(i=1;i<13;i++)
-    cout<<percentage[i]<<" ";
-
-//Entropy
-for(i=1;i<13;i++){
-        entropy[i]=-(percentage[i]*log2(percentage[i])+(1-percentage[i])*log2(1-percentage[i]));
-    }
-
-cout<<"\nEntropy: ";
-for(i=1;i<13;i++)
-    cout<<entropy[i]<<" ";
-
-    float m=minimum(entropy,13);
-    cout<<"\nMinimum entropy: "<<m<<endl;
-
-    //removing missing values:
-        //we'll use the prior one from univariate analysis
+    //removing missing values
+    //we'll use the prior one from univariate analysis
 }
