@@ -1,7 +1,6 @@
 #include<bits/stdc++.h>
 #include <iostream>
 #include <string>
-#include<cstring>
 #include<vector>
 using namespace std;
 
@@ -24,39 +23,30 @@ struct user
     string status;              //dependent variable
 }users[1000];
 
-struct node{
-float *dataset;
-string category;
-struct node *left;
-struct node *right;
-};
 
-struct tree{
-int size;
-struct node **subTree;
-};
+//tree tracker array
+int treeTrack[4095];
+int treeIndex=0;
 
-void storeArray(float a[][13], float b[][13],int n) {
-int i,j;
-for(i=0;i<n;++i){
-    for(j=0;j<13;j++)
-        a[i][j] = b[i][j];
-    }
-}
-// Create nodes
-struct node *newNode(float dataset[][13], string category,int n)
+//stack
+int top=-1, stackArray[12];
+//for push in string
+void push(int a)
 {
-  struct node *temp = (struct node *)malloc(sizeof(struct node));
-
-  temp->left= temp->right=NULL;
-//  storeArray(temp->dataset,dataset,n);
-  temp->category=category;
-
-  return temp;
+    top++;
+    stackArray[top]=a;
 }
 
+//for pop in string
+int pop()
+{
+    int a;
+    a=stackArray[top];
+    top--;
+    return a;
+}
 
-int minimum(float a[],int n){
+int minEntropyIndex(float a[],int n){
     int i;
     int index=1;
     float m=a[1];
@@ -66,11 +56,11 @@ int minimum(float a[],int n){
             index=i;
         }
     }
-    cout<<"\nMinimum entropy: "<<m<<endl;
-return i;//the category number
+  //  cout<<"\nMinimum entropy: "<<m<<endl;
+return index;//the category number
 }
 
-int minEntropy(float a[],int n){
+float minEntropy(float a[],int n){
     int i;
     float m=a[1];
     for(i=1;i<n;i++){
@@ -84,7 +74,7 @@ return m;//min entropy
 float* meanCalculation(int n,float data[][13]){
 float *mean=new float[13];
 int sum,i,j;
-for(j=1;j<13;j++){
+for(j=1;j<12;j++){
         sum=0;
     for(i=0;i<n;i++)
         sum=sum+data[i][j];
@@ -96,28 +86,27 @@ return mean;
 
 float* entropyCalculation(int n,float data[][13]){
 int i,j;
-float mean[13],percentage[13];
-float *entropy=new float[13];
+float mean[12],percentage[12];
+float *entropy=new float[12];
 
 //Mean
 int sum;
-for(j=0;j<13;j++){
+for(j=1;j<12;j++){
         sum=0;
-   // mean[i]=Mean(m,n,a,i);
     for(i=0;i<n;i++)
         sum=sum+data[i][j];
 
     mean[j]=sum/(float)n;
 }
-cout<<"\nMean:\n";
-for(i=1;i<13;i++)
-    cout<<mean[i]<<" ";
-    cout<<endl;
+//cout<<"\nMean:\n";
+//for(i=1;i<12;i++)
+//    cout<<mean[i]<<" ";
+//    cout<<endl;
 
 //Percentage
 int c;
 
-for(j=0;j<13;j++){
+for(j=1;j<12;j++){
         c=0;
     for(i=0;i<n;i++){
         if(data[i][j]<mean[j])
@@ -125,20 +114,20 @@ for(j=0;j<13;j++){
     }
     percentage[j]=(float)c/(float)n;
 }
-cout<<"Percentage:\n";
-for(i=1;i<13;i++)
-    cout<<percentage[i]<<" ";
+//cout<<"Percentage:\n";
+//for(i=1;i<12;i++)
+//    cout<<percentage[i]<<" ";
 
 //Entropy
-for(i=1;i<13;i++){
+for(i=1;i<12;i++){
         entropy[i]=-(percentage[i]*log2(percentage[i])+(1-percentage[i])*log2(1-percentage[i]));
     }
 
-cout<<"\nEntropy(In function):\n";
-for(i=1;i<13;i++)
+cout<<"\n\nEntropy:\n";
+for(i=1;i<12;i++)
     cout<<entropy[i]<<" ";
 
-    int m=minimum(entropy,13);
+    int m=minEntropyIndex(entropy,12);
 
     return entropy;
 }
@@ -147,45 +136,68 @@ void print(int n,float a[][13]){
 int i,j;
 cout<<"ID Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
 for(i=0;i<n;i++){
-    cout<<users[i].loan_ID<<"\t";
-    for(j=1;j<13;j++){
+    for(j=0;j<13;j++){
         cout<<a[i][j]<<"\t";
     }
     cout<<"\n";
     }
 }
 
-// Function to swap
-void swapNode(struct node **a, struct node **b)
-{
-  struct node *t = *a;
-  *a = *b;
-  *b = t;
-}
-
-void swapArray(float a[], float b[]) {
-int i;
-for(i=0;i<13;++i){
-    float temp;
-    temp = a[i];
-    a[i] = b[i];
-    b[i] = temp;
-    }
-}
-
 void decisionTree(int n, float a[][13]){
+    int i,j,k=0,l=0,popped;
     float *entropy=entropyCalculation(n,a);
-    float *mean=meanCalculation(n,a);
-    int minEntropyCategory=minimum(entropy,n);    //the category number to split
-    float minEntropyValue=minEntropy(entropy,n);  //minimum entropy
-    int i,j,k=0,l=0;
+    for(i=top;i>=0;i--){
+        entropy[stackArray[i]]=404;
+    }
 
-    if(abs(minEntropyValue)<=EPS){
+    float *mean=meanCalculation(n,a);
+    int minEntropyCategory=minEntropyIndex(entropy,12);    //the category number to split
+    float minEntropyValue=minEntropy(entropy,12);  //minimum entropy
+    treeTrack[treeIndex]=minEntropyCategory;
+
+
+
+    if(n<=1){
+        treeTrack[2*treeIndex+1]=-1;    //yes
+        treeTrack[2*treeIndex+2]=-2;    //no
+        treeIndex=(treeIndex-1)/2;
+        popped=pop();
+        return;
+    }
+
+    if(minEntropyValue<=EPS || minEntropyValue!=minEntropyValue){
+            treeTrack[2*treeIndex+1]=-1;    //yes
+            treeTrack[2*treeIndex+2]=-2;    //no
+            treeIndex=(treeIndex-1)/2;
+            popped=pop();
             return;
     }
 
-    vector<int> temp;
-    float value;
+    if(minEntropyValue==404)
+        return;
+
+    push(minEntropyCategory);
+
+    cout<<"\nMin entropy value: "<<minEntropyValue;
+    cout<<"\nMin entropy category: "<<minEntropyCategory;
+    cout<<"\nTree Index: "<<treeIndex;
+
+    cout<<"\nTree Track:\n";
+        for(i=0;i<30;i++){
+        cout<<treeTrack[i]<<" ";
+    }
+
+    cout<<"\nStack: ";
+    for(i=0;i<=top;i++){
+        cout<<stackArray[i]<<" ";
+    }
+
+
+
+
+    if(treeTrack[treeIndex]!=-10){
+      //  popped=pop();
+    }
 
     int leftSize=0,rightSize=0;
 
@@ -213,8 +225,11 @@ void decisionTree(int n, float a[][13]){
             l++;
         }
     }
-
+    cout<<"\nLeftSize: "<<leftSize<<"\nRight size: "<<rightSize<<endl;
+    treeIndex=2*treeIndex+1;
     decisionTree(leftSize,leftDataset);
+
+    treeIndex=2*treeIndex+2;
     decisionTree(rightSize,rightDataset);
 
 }
@@ -225,8 +240,9 @@ int main()
 {
 
     //read train file
-    ifstream fp("Train Dataset.txt");
+    ifstream fp("random.txt");
     int i=0,n=0,j;
+
 
     string line,temp="";
     getline(fp,line);   //first line
@@ -344,12 +360,18 @@ int main()
             data[i][12]=0;
     }
 
-    //print(n,data);
+    for(i=0;i<4095;i++){
+        treeTrack[i]=-10;
+    }
 
-    float* entropy=entropyCalculation(n,data);
-    cout<<"\nEntropy(in main):\n";
-    for(i=1;i<13;i++)
-    cout<<entropy[i]<<" ";
+   // print(n,data);
+    decisionTree(n,data);
 
+        cout<<"\nFinal Tree Track:\n";
+        for(i=0;i<30;i++){
+        cout<<"("<<i<<")"<<treeTrack[i]<<" ";
+    }
+
+
+return 0;
 }
-
