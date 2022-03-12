@@ -1,10 +1,13 @@
 #include<bits/stdc++.h>
 #include <iostream>
 #include <string>
-#include<vector>
-using namespace std;
 
 #define EPS 1.0e-9
+#define INITIAL -10
+#define ERROR 404
+#define catNum 13
+
+using namespace std;
 
 struct user
 {
@@ -29,7 +32,8 @@ int treeTrack[4095];
 int treeIndex=0;
 
 //stack
-int top=-1, stackArray[12];
+int top=-1, stackArray[catNum-1];
+
 //for push in string
 void push(int a)
 {
@@ -56,7 +60,6 @@ int minEntropyIndex(float a[],int n){
             index=i;
         }
     }
-  //  cout<<"\nMinimum entropy: "<<m<<endl;
 return index;//the category number
 }
 
@@ -71,10 +74,10 @@ float minEntropy(float a[],int n){
 return m;//min entropy
 }
 
-float* meanCalculation(int n,float data[][13]){
+float* meanCalculation(int n,float data[][catNum]){
 float *mean=new float[13];
 int sum,i,j;
-for(j=1;j<12;j++){
+for(j=1;j<catNum-1;j++){
         sum=0;
     for(i=0;i<n;i++)
         sum=sum+data[i][j];
@@ -84,29 +87,15 @@ for(j=1;j<12;j++){
 return mean;
 }
 
-float* entropyCalculation(int n,float data[][13]){
+float* entropyCalculation(int n,float data[][catNum], float mean[catNum-1]){
 int i,j;
-float mean[12],percentage[12];
-float *entropy=new float[12];
-
-//Mean
-int sum;
-for(j=1;j<12;j++){
-        sum=0;
-    for(i=0;i<n;i++)
-        sum=sum+data[i][j];
-
-    mean[j]=sum/(float)n;
-}
-//cout<<"\nMean:\n";
-//for(i=1;i<12;i++)
-//    cout<<mean[i]<<" ";
-//    cout<<endl;
+float percentage[catNum-1];
+float *entropy=new float[catNum-1];
 
 //Percentage
 int c;
 
-for(j=1;j<12;j++){
+for(j=1;j<catNum-1;j++){
         c=0;
     for(i=0;i<n;i++){
         if(data[i][j]<mean[j])
@@ -114,91 +103,103 @@ for(j=1;j<12;j++){
     }
     percentage[j]=(float)c/(float)n;
 }
-//cout<<"Percentage:\n";
-//for(i=1;i<12;i++)
-//    cout<<percentage[i]<<" ";
+
 
 //Entropy
-for(i=1;i<12;i++){
+for(i=1;i<catNum-1;i++){
         entropy[i]=-(percentage[i]*log2(percentage[i])+(1-percentage[i])*log2(1-percentage[i]));
     }
 
 cout<<"\n\nEntropy:\n";
-for(i=1;i<12;i++)
+for(i=1;i<catNum-1;i++)
     cout<<entropy[i]<<" ";
 
-    int m=minEntropyIndex(entropy,12);
+    int m=minEntropyIndex(entropy,catNum-1);
 
     return entropy;
 }
 
-void print(int n,float a[][13]){
-int i,j;
-cout<<"ID Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
-for(i=0;i<n;i++){
-    for(j=0;j<13;j++){
-        cout<<a[i][j]<<"\t";
-    }
-    cout<<"\n";
+void print(int n,float a[][catNum]){
+    int i,j;
+    cout<<"ID Gender Married Dependents Education Employed A.Income CA.Income LoanAmount Term Credit_History Area Status\n";
+    for(i=0;i<n;i++){
+        for(j=0;j<13;j++){
+            cout<<a[i][j]<<"\t";
+        }
+        cout<<"\n";
     }
 }
 
-void decisionTree(int n, float a[][13]){
-    int i,j,k=0,l=0,popped;
-    float *entropy=entropyCalculation(n,a);
-    for(i=top;i>=0;i--){
-        entropy[stackArray[i]]=404;
+void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
+
+    int i,j,k=0,l=0;
+
+    //checks if it is an already checked state
+        if(treeTrack[treeIndex]!=INITIAL){
+            if(treeIndex==0)
+                treeIndex=2*treeIndex+2;
+            else{
+                treeIndex=(treeIndex-1)/2;
+                pop();
+                return;}
+        }
+
+    //calculates entropy here
+    float *entropy=entropyCalculation(n,a,mean);
+
+    for(i=0;i<=top;i++){
+        entropy[stackArray[i]]=ERROR;
     }
 
-    float *mean=meanCalculation(n,a);
-    int minEntropyCategory=minEntropyIndex(entropy,12);    //the category number to split
-    float minEntropyValue=minEntropy(entropy,12);  //minimum entropy
+    int minEntropyCategory=minEntropyIndex(entropy,catNum-1);    //the category number to split
+    float minEntropyValue=minEntropy(entropy,catNum-1);  //minimum entropy
     treeTrack[treeIndex]=minEntropyCategory;
 
+int counting;
 
-
-    if(n<=1){
-        treeTrack[2*treeIndex+1]=-1;    //yes
-        treeTrack[2*treeIndex+2]=-2;    //no
-        treeIndex=(treeIndex-1)/2;
-        popped=pop();
-        return;
-    }
-
-    if(minEntropyValue<=EPS || minEntropyValue!=minEntropyValue){
-            treeTrack[2*treeIndex+1]=-1;    //yes
-            treeTrack[2*treeIndex+2]=-2;    //no
-            treeIndex=(treeIndex-1)/2;
-            popped=pop();
-            return;
-    }
-
-    if(minEntropyValue==404)
-        return;
-
-    push(minEntropyCategory);
-
+    //prints everything
     cout<<"\nMin entropy value: "<<minEntropyValue;
     cout<<"\nMin entropy category: "<<minEntropyCategory;
     cout<<"\nTree Index: "<<treeIndex;
 
-    cout<<"\nTree Track:\n";
-        for(i=0;i<30;i++){
-        cout<<treeTrack[i]<<" ";
-    }
-
-    cout<<"\nStack: ";
-    for(i=0;i<=top;i++){
-        cout<<stackArray[i]<<" ";
+    cout<<"\nTree Track:\n\t";
+    for(i=0;i<4095;i++){
+        if(treeTrack[i]!=INITIAL)
+            cout<<"("<<i<<")"<<treeTrack[i]<<"   ";
     }
 
 
 
+    //checks leaf and generates decision
+    if(minEntropyValue==0 || minEntropyValue==ERROR || minEntropyValue!=minEntropyValue || n==1 || top>=11){
+           counting=0;
+           for(i=0;i<n;i++){
+                if(a[i][catNum-1]==1)
+                    counting++;
+           }
+           if(counting>=(n-counting)){
+               treeTrack[2*treeIndex+1]=-1; //yes
+               treeTrack[2*treeIndex+2]=-2; //no
+           }
 
-    if(treeTrack[treeIndex]!=-10){
-      //  popped=pop();
+           else{
+               treeTrack[2*treeIndex+1]=-2; //no
+               treeTrack[2*treeIndex+2]=-1; //yes
+           }
+
+           treeIndex=(treeIndex-1)/2;
+           pop();
+           return;
+
     }
 
+
+    //update stack and tree track array
+    push(minEntropyCategory);
+    treeTrack[treeIndex]=minEntropyCategory;
+
+
+    //splits the dataset
     int leftSize=0,rightSize=0;
 
     for(i=0;i<n;i++){
@@ -209,28 +210,37 @@ void decisionTree(int n, float a[][13]){
             rightSize++;
 
     }
-       float leftDataset[leftSize][13],rightDataset[rightSize][13];
+       float leftDataset[leftSize][catNum],rightDataset[rightSize][catNum];
 
     for(i=0;i<n;i++){
         if(a[i][minEntropyCategory]<mean[minEntropyCategory]){
-             for(int j=0;j<13; j++){
+             for(int j=0;j<catNum; j++){
                 leftDataset[k][j]=a[i][j];
-                }
+            }
                 k++;
         }
         else{
-           for(int j=0;j<13; j++){
+           for(int j=0;j<catNum; j++){
                 rightDataset[l][j]=a[i][j];
-                }
+            }
             l++;
         }
     }
-    cout<<"\nLeftSize: "<<leftSize<<"\nRight size: "<<rightSize<<endl;
-    treeIndex=2*treeIndex+1;
-    decisionTree(leftSize,leftDataset);
 
-    treeIndex=2*treeIndex+2;
-    decisionTree(rightSize,rightDataset);
+    //print stack
+    cout<<"\nStack: ";
+    for(i=0;i<=top;i++){
+        cout<<stackArray[i]<<" ";
+    }
+    cout<<"\nLeftSize: "<<leftSize<<"\nRight size: "<<rightSize<<endl;
+
+    //recursion here
+    treeIndex=2*treeIndex+1;
+    decisionTree(leftSize,leftDataset,mean);
+
+   //----- treeIndex=2*treeIndex+2;
+    treeIndex++;
+    decisionTree(rightSize,rightDataset,mean);
 
 }
 
@@ -240,7 +250,7 @@ int main()
 {
 
     //read train file
-    ifstream fp("random.txt");
+    ifstream fp("Train-Dataset.txt");
     int i=0,n=0,j;
 
 
@@ -313,7 +323,7 @@ int main()
 
 
     //convert into a 2D array
-    float data[n][13];
+    float data[n][catNum];
     for(i=0;i<n;i++){
         data[i][0]=atof(users[i].loan_ID.c_str());
         if(users[i].gender=="Male")
@@ -361,16 +371,19 @@ int main()
     }
 
     for(i=0;i<4095;i++){
-        treeTrack[i]=-10;
+        treeTrack[i]=INITIAL;
     }
 
    // print(n,data);
-    decisionTree(n,data);
+   float *mean=meanCalculation(n,data);
 
-        cout<<"\nFinal Tree Track:\n";
-        for(i=0;i<30;i++){
-        cout<<"("<<i<<")"<<treeTrack[i]<<" ";
-    }
+    decisionTree(n,data,mean);
+
+        cout<<"\n\nFinal Tree Track:\n";
+        for(i=0;i<4095;i++){
+                if(treeTrack[i]!=INITIAL)
+                    cout<<"("<<i<<")"<<treeTrack[i]<<"   ";
+        }
 
 
 return 0;
