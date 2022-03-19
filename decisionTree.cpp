@@ -24,7 +24,7 @@ struct user
     string credit_History;      //categorical
     string area;                //ordinal
     string status;              //dependent variable
-}users[1000];
+}users[100000];
 
 
 //tree tracker array
@@ -98,8 +98,11 @@ int c;
 for(j=1;j<catNum-1;j++){
         c=0;
     for(i=0;i<n;i++){
-        if(data[i][j]<mean[j])
-            c++;
+        if(data[i][j]<mean[j]){
+            if(data[i][catNum-1]==1)
+                c++;
+        }
+
     }
     percentage[j]=(float)c/(float)n;
 }
@@ -132,7 +135,8 @@ void print(int n,float a[][catNum]){
 
 void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
 
-    int i,j,k=0,l=0;
+    int i,j,k=0,l=0,counting;
+
 
     //checks if it is an already checked state
         if(treeTrack[treeIndex]!=INITIAL){
@@ -141,7 +145,8 @@ void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
             else{
                 treeIndex=(treeIndex-1)/2;
                 pop();
-                return;}
+                return;
+            }
         }
 
     //calculates entropy here
@@ -155,7 +160,6 @@ void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
     float minEntropyValue=minEntropy(entropy,catNum-1);  //minimum entropy
     treeTrack[treeIndex]=minEntropyCategory;
 
-int counting;
 
     //prints everything
     cout<<"\nMin entropy value: "<<minEntropyValue;
@@ -171,12 +175,13 @@ int counting;
 
 
     //checks leaf and generates decision
-    if(minEntropyValue==0 || minEntropyValue==ERROR || minEntropyValue!=minEntropyValue || n==1 || top>=11){
+    if(minEntropyValue==0 || minEntropyValue==ERROR || minEntropyValue!=minEntropyValue || n==1 || top>(catNum-1)){
            counting=0;
            for(i=0;i<n;i++){
                 if(a[i][catNum-1]==1)
                     counting++;
            }
+
            if(counting>=(n-counting)){
                treeTrack[2*treeIndex+1]=-1; //yes
                treeTrack[2*treeIndex+2]=-2; //no
@@ -210,17 +215,18 @@ int counting;
             rightSize++;
 
     }
-       float leftDataset[leftSize][catNum],rightDataset[rightSize][catNum];
+
+    float leftDataset[leftSize][catNum],rightDataset[rightSize][catNum];
 
     for(i=0;i<n;i++){
         if(a[i][minEntropyCategory]<mean[minEntropyCategory]){
-             for(int j=0;j<catNum; j++){
+            for(int j=0;j<catNum; j++){
                 leftDataset[k][j]=a[i][j];
             }
-                k++;
+            k++;
         }
         else{
-           for(int j=0;j<catNum; j++){
+            for(int j=0;j<catNum; j++){
                 rightDataset[l][j]=a[i][j];
             }
             l++;
@@ -234,14 +240,17 @@ int counting;
     }
     cout<<"\nLeftSize: "<<leftSize<<"\nRight size: "<<rightSize<<endl;
 
+
     //recursion here
     treeIndex=2*treeIndex+1;
     decisionTree(leftSize,leftDataset,mean);
 
-   //----- treeIndex=2*treeIndex+2;
+    //treeIndex=2*treeIndex+2;
     treeIndex++;
     decisionTree(rightSize,rightDataset,mean);
 
+
+   // return;
 }
 
 
@@ -250,7 +259,7 @@ int main()
 {
 
     //read train file
-    ifstream fp("Train-Dataset.txt");
+    ifstream fp("random.txt");
     int i=0,n=0,j;
 
 
@@ -328,13 +337,36 @@ int main()
         data[i][0]=atof(users[i].loan_ID.c_str());
         if(users[i].gender=="Male")
             data[i][1]=1;
-        else
+        else if(users[i].gender=="Female")
             data[i][1]=0;
+        else{
+            x=0;
+            for(i=0;i<n;i++){
+                if(users[i].gender=="Male")
+                    x++;
+            }
+            if(x>n-x)
+                data[i][1]=1;
+            else
+                data[i][1]=0;
+        }
 
         if(users[i].married=="Yes")
             data[i][2]=1;
-        else
+        else if(users[i].married=="No")
             data[i][2]=0;
+        else
+            {
+                x=0;
+                for(i=0;i<n;i++){
+                    if(users[i].married=="Yes")
+                        x++;
+                }
+                if(x>n-x)
+                data[i][2]=1;
+            else
+                data[i][2]=0;
+            }
 
         if(users[i].dependent=="3+")
             data[i][3]=4;
@@ -343,13 +375,39 @@ int main()
 
         if(users[i].education=="Graduate")
             data[i][4]=1;
-        else
+        else if(users[i].education=="Not Graduate")
             data[i][4]=0;
+        else
+            {
+              x=0;
+                for(i=0;i<n;i++){
+                    if(users[i].education=="Graduate")
+                        x++;
+                }
+                if(x>n-x)
+                data[i][4]=1;
+            else
+                data[i][4]=0;
+            }
 
         if(users[i].employment=="Yes")
             data[i][5]=1;
-        else
+         else if(users[i].employment=="No")
             data[i][5]=0;
+        else
+            {
+
+              x=0;
+                for(i=0;i<n;i++){
+                    if(users[i].employment=="Yes")
+                        x++;
+                }
+                if(x>n-x)
+                data[i][5]=1;
+            else
+                data[i][5]=0;
+            }
+
 
         data[i][6]=atof(users[i].applicantIncome.c_str());
         data[i][7]=atof(users[i].coApplicantIncome.c_str());
