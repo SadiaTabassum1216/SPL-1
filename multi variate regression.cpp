@@ -3,10 +3,10 @@ using namespace std;
 
 //B=(X'X)^(-1)X'Y
 
-void transpose(int row, int column,float m1[50][50],float m2[50][50]);
-void inverse(int n,float m1[50][50],float m2[50][50]);
-void multiplication(int row1,int column1,int row2,int column2,float matrix1[50][50],
-                    float matrix2[50][50],float mul[50][50]);
+void transpose(int row, int column,float m1[140][140],float m2[140][140]);
+void inverse(int n,float m1[140][140],float m2[140][140]);
+void multiplication(int row1,int column1,int row2,int column2,float matrix1[140][140],
+                    float matrix2[140][140],float mul[140][140]);
 
 
 int main()
@@ -18,7 +18,7 @@ freopen("mv.txt", "r", stdin);
 cin>>row>>n;
 column=n+1;
 
-float matrix[50][50],transposeMatrix[50][50],mul[50][50],mul2[50][50],inverseMatrix[50][50],y[50][50];
+float matrix[140][140],transposeMatrix[140][140],mul[140][140],mul2[140][140],inverseMatrix[140][140],y[140][140],user[140],ans=0;
 
 for(i=0;i<row;i++)
     matrix[i][0]=1;
@@ -36,6 +36,10 @@ for(i=0;i<row;i++){
         cin>>y[i][j];
     }
 }
+
+//cout<<"User input:"<<endl;
+for(i=0;i<n;i++)
+    cin>>user[i];
 
 
 cout<<"\nInput Matrix:\n";
@@ -56,18 +60,16 @@ multiplication(column,column,column,row,inverseMatrix,transposeMatrix,mul);
 cout<<"Multiplication: (X'X)^(-1)X'Y"<<endl;
 multiplication(column,row,row,1,mul,y,mul2);
 
+ans=mul2[0][0];
+for(i=1;i<=n;i++)
+ans+=mul2[i][0]*user[i-1];
 
-//    cout<<"\nInverse matrix: "<<endl;
-//    for(i=0;i<N;i++){
-//        for(j=0;j<N;j++)
-//            cout<<setw(15)<<inverseMatrix[i][j];
-//        cout<<endl;
-//    }
+cout<<"\nThe value is: "<<ans;
 
 return 0;
 }
 
-void transpose(int row,int column,float m1[50][50],float m2[50][50])
+void transpose(int row,int column,float m1[140][140],float m2[140][140])
 {
     int i,j;
 
@@ -79,16 +81,16 @@ void transpose(int row,int column,float m1[50][50],float m2[50][50])
 cout<<"\nTranspose Matrix:\n";
     for(i=0;i<column;i++){
         for(j=0;j<row;j++){
-            cout<<setw(20)<<m2[i][j]<<" ";
+            cout<<setw(20)<<m2[i][j];
         }
         cout<<endl;
     }
 }
 
-void inverse(int n,float m1[50][50],float m2[50][50])
+void inverse(int n,float m1[140][140],float m2[140][140])
 {
     int i,j,k;
-    float d,a[500][500];
+    float d,a[1400][1400];
 
     for(i=1;i<=n;i++){
         for(j=1;j<=n;j++){
@@ -137,8 +139,8 @@ void inverse(int n,float m1[50][50],float m2[50][50])
     }
 }
 
-void multiplication(int row1,int column1,int row2,int column2,float matrix1[50][50],
-                    float matrix2[50][50],float mul[50][50])
+void multiplication(int row1,int column1,int row2,int column2,float matrix1[140][140],
+                    float matrix2[140][140],float mul[140][140])
 {
     int i,j,k;
     for(i=0;i<row1;i++){
@@ -153,9 +155,8 @@ void multiplication(int row1,int column1,int row2,int column2,float matrix1[50][
    // cout<<"The multiplication of the matrix is:\n";
     for(i=0;i<row1;i++){
         for(j=0;j<column2;j++){
-            cout<<setw(20)<<mul[i][j]<<" ";
+            cout<<setw(20)<<mul[i][j];
         }
         cout<<endl;
     }
 }
-
