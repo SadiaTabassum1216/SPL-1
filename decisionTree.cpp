@@ -7,25 +7,9 @@
 #define ERROR 404
 #define catNum 13
 
+int column,n;
+
 using namespace std;
-
-struct user
-{
-    string loan_ID;             //key
-    string gender;              //categorical
-    string married;             //categorical
-    string dependent;           //ordinal
-    string education;           //ordinal
-    string employment;          //categorical
-    string applicantIncome;     //numerical
-    string coApplicantIncome;   //numerical
-    string amount;              //numerical
-    string loanTerm;            //numerical
-    string credit_History;      //categorical
-    string area;                //ordinal
-    string status;              //dependent variable
-}users[100000];
-
 
 //tree tracker array
 int treeTrack[4095];
@@ -257,176 +241,22 @@ void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
 //main
 int main()
 {
+    int i,j,column,row;
 
-    //read train file
-    ifstream fp("random.txt");
-    int i=0,n=0,j;
+    freopen("output.txt", "r", stdin);
+    cin>>n>>column;
+    row=n;
 
+    float data[row][catNum];
 
-    string line,temp="";
-    getline(fp,line);   //first line
-
-    for(i=0;;++i)
-        {
-            getline(fp,line,',');
-            users[i].loan_ID=line;
-
-            getline(fp,line,',');
-            users[i].gender=line;
-
-            getline(fp,line,',');
-            users[i].married=line;
-
-            getline(fp,line,',');
-            users[i].dependent=line;
-
-            getline(fp,line,',');
-            users[i].education=line;
-
-            getline(fp,line,',');
-            users[i].employment=line;
-
-            getline(fp,line,',');
-            users[i].applicantIncome=line;
-
-            getline(fp,line,',');
-            users[i].coApplicantIncome=line;
-
-            getline(fp,line,',');
-            users[i].amount=line;
-
-            getline(fp,line,',');
-            users[i].loanTerm=line;
-
-            getline(fp,line,',');
-            users[i].credit_History=line;
-
-            getline(fp,line,',');
-            users[i].area=line;
-
-            getline(fp,line,'\n');
-            users[i].status=line;
-
-            if(!fp)
-                break;
-//            cout <<i+1<<"\t"<<users[i].loan_ID<<"\t"<<users[i].gender<<"\t"<<users[i].married<<"\t"
-//            <<users[i].dependent<<"\t"<<users[i].education<<"\t"<<users[i].employment<<"\t"
-//            <<users[i].applicantIncome<<"\t"<<users[i].coApplicantIncome<<"\t"
-//            <<users[i].amount<<"\t"<<users[i].loanTerm<<"\t"
-//            <<users[i].credit_History<< setw (20)<<users[i].area<< setw (10)<<users[i].status <<endl;
-            ++n;
-            }
-
-    fp.close();
-    cout<<"Total customer is: "<<n<<endl;
-    int x=0;
-    float rate;
-    for(i=0;i<n;i++){
-        if(users[i].status=="Y")
-            x++;
-    }
-    rate=(float)x/(float)n*100.00;
-
-    cout<<"Approved loan: "<<x<<endl;
-    cout<<"Approval rate:"<< rate<<"%"<<endl;
-
-
-    //convert into a 2D array
-    float data[n][catNum];
-    for(i=0;i<n;i++){
-        data[i][0]=atof(users[i].loan_ID.c_str());
-        if(users[i].gender=="Male")
-            data[i][1]=1;
-        else if(users[i].gender=="Female")
-            data[i][1]=0;
-        else{
-            x=0;
-            for(i=0;i<n;i++){
-                if(users[i].gender=="Male")
-                    x++;
-            }
-            if(x>n-x)
-                data[i][1]=1;
-            else
-                data[i][1]=0;
+    for(i=0;i<row;i++){
+        for(j=0;j<column;j++){
+            cin>>data[i][j];
         }
-
-        if(users[i].married=="Yes")
-            data[i][2]=1;
-        else if(users[i].married=="No")
-            data[i][2]=0;
-        else
-            {
-                x=0;
-                for(i=0;i<n;i++){
-                    if(users[i].married=="Yes")
-                        x++;
-                }
-                if(x>n-x)
-                data[i][2]=1;
-            else
-                data[i][2]=0;
-            }
-
-        if(users[i].dependent=="3+")
-            data[i][3]=4;
-        else
-            data[i][3]=atof(users[i].dependent.c_str());
-
-        if(users[i].education=="Graduate")
-            data[i][4]=1;
-        else if(users[i].education=="Not Graduate")
-            data[i][4]=0;
-        else
-            {
-              x=0;
-                for(i=0;i<n;i++){
-                    if(users[i].education=="Graduate")
-                        x++;
-                }
-                if(x>n-x)
-                data[i][4]=1;
-            else
-                data[i][4]=0;
-            }
-
-        if(users[i].employment=="Yes")
-            data[i][5]=1;
-         else if(users[i].employment=="No")
-            data[i][5]=0;
-        else
-            {
-
-              x=0;
-                for(i=0;i<n;i++){
-                    if(users[i].employment=="Yes")
-                        x++;
-                }
-                if(x>n-x)
-                data[i][5]=1;
-            else
-                data[i][5]=0;
-            }
-
-
-        data[i][6]=atof(users[i].applicantIncome.c_str());
-        data[i][7]=atof(users[i].coApplicantIncome.c_str());
-        data[i][8]=atof(users[i].amount.c_str());
-        data[i][9]=atof(users[i].loanTerm.c_str());
-        data[i][10]=atof(users[i].credit_History.c_str());
-
-        if(users[i].area=="Urban")
-            data[i][11]=2;
-        else if(users[i].area=="Semiurban")
-            data[i][11]=1;
-        else
-            data[i][11]=0;
-
-        if(users[i].status=="Y")
-            data[i][12]=1;
-        else
-            data[i][12]=0;
     }
+
+
+    cout<<"Total customer is: "<<n<<endl;
 
     for(i=0;i<4095;i++){
         treeTrack[i]=INITIAL;
@@ -442,7 +272,6 @@ int main()
                 if(treeTrack[i]!=INITIAL)
                     cout<<"("<<i<<")"<<treeTrack[i]<<"   ";
         }
-
 
 return 0;
 }
