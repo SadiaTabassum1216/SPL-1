@@ -71,31 +71,37 @@ for(j=1;j<catNum-1;j++){
 return mean;
 }
 
-float* entropyCalculation(int n,float data[][catNum], float mean[catNum-1]){
-int i,j;
-float percentage[catNum-1];
-float *entropy=new float[catNum-1];
-
-//Percentage
-int c;
-
-for(j=1;j<catNum-1;j++){
-        c=0;
-    for(i=0;i<n;i++){
-        if(data[i][j]<mean[j]){
-            if(data[i][catNum-1]==1)
-                c++;
-        }
-
-    }
-    percentage[j]=(float)c/(float)n;
+float entropyValue(int num,int total)
+{
+    float percentage=(float)num/(float)total;
+    float entropy=-(percentage*log2(percentage)+(1-percentage)*log2(1-percentage));
+    return entropy;
 }
 
 
-//Entropy
-for(i=1;i<catNum-1;i++){
-        entropy[i]=-(percentage[i]*log2(percentage[i])+(1-percentage[i])*log2(1-percentage[i]));
+float* entropyCalculation(int n,float data[][catNum], float mean[catNum-1]){
+int i,j;
+//float percentage[catNum-1];
+float *entropy=new float[catNum-1];
+
+//Percentage
+int countLow,countHigh;
+
+for(j=1;j<catNum-1;j++){
+        countLow=0,countHigh=0;
+    for(i=0;i<n;i++){
+        if(data[i][j]<mean[j])
+            countLow++;
+        else
+            countHigh++;
+
+
     }
+//    percentage[j]=(float)countLow/(float)n;
+//    entropy[j]=-(percentage[j]*log2(percentage[j])+(1-percentage[j])*log2(1-percentage[j]));
+    entropy[j]=entropyValue(countLow,n);
+}
+
 
 cout<<"\n\nEntropy:\n";
 for(i=1;i<catNum-1;i++)
@@ -105,6 +111,45 @@ for(i=1;i<catNum-1;i++)
 
     return entropy;
 }
+
+
+
+float* informationGain(int n,float data[][catNum], float mean[catNum-1])
+{
+    float *gain=new float[catNum-1];
+
+    int i,j,countLow,countHigh,lowYes,lowNo,highYes,highNo;
+
+    for(j=1;j<catNum-1;j++){
+        countLow=0,countHigh=0,lowYes=0,lowNo=0,highYes=0,highNo=0;
+        for(i=0;i<n;i++){
+            if(data[i][j]<mean[j]){
+                countLow++;
+                if(data[i][catNum]==1)
+                    lowYes++;
+                else
+                    lowNo++;
+                }
+            else{
+                countHigh++;
+                if(data[i][catNum]==1)
+                    highYes++;
+                else
+                    highNo++;
+                }
+            }
+        gain[j]=entropyValue(countLow,n)-((countLow/n)*entropyValue(lowYes,countLow))-((countHigh/n)*entropyValue(highYes,countHigh));
+
+        }
+
+cout<<"\nGain:\n";
+for(i=1;i<catNum-1;i++)
+    cout<<gain[i]<<" ";
+
+return gain;
+}
+
+
 
 void print(int n,float a[][catNum]){
     int i,j;
@@ -135,6 +180,7 @@ void decisionTree(int n, float a[][catNum],float mean[catNum-1]){
 
     //calculates entropy here
     float *entropy=entropyCalculation(n,a,mean);
+    float *gain=informationGain(n,a,mean);
 
     for(i=0;i<=top;i++){
         entropy[stackArray[i]]=ERROR;
@@ -250,13 +296,21 @@ int main()
     float data[row][catNum];
 
     for(i=0;i<row;i++){
-        for(j=0;j<column;j++){
+        for(j=0;j<=column;j++){
             cin>>data[i][j];
         }
     }
 
 
     cout<<"Total customer is: "<<n<<endl;
+
+
+//    for(i=0;i<20;i++){
+//        for(j=0;j<=column;j++){
+//            cout<<setw(6)<<data[i][j];
+//        }
+//        cout<<endl;
+//    }
 
     for(i=0;i<4095;i++){
         treeTrack[i]=INITIAL;
