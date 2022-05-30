@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 #include "test.h"
-//#include "regression.h"
+#include "regression.h"
+#include "decisionTree.h"
 #define catNum 13
 #define k 5
 
@@ -77,7 +78,9 @@ void kFoldValidation(string input)//total file
     for(i=0;i<k;i++){
         start=end+1;
         end=start+userPerGroup-1;
-        cout<<"\nGroup: "<<i+1<<"\tStart: "<<start<<"\tEnd: "<<end<<endl;
+        cout<<"\nGroup:"<<i+1<<"\n------------\nStart: "<<start<<"\tEnd: "<<end<<endl;
+
+
        for(l=0;l<start;l++){
             for(j=0;j<=column;j++){
                 train[l].information[j]=testUsers[l].information[j];
@@ -95,7 +98,8 @@ void kFoldValidation(string input)//total file
         }
 
         //write a train file
-        {ofstream file("train.txt");
+        {
+            ofstream file("train.txt");
         file<<userNum-userPerGroup<<"\t"<<"12"<<endl;
 
         for(itr=0;itr<(userNum-userPerGroup);itr++){
@@ -120,15 +124,27 @@ void kFoldValidation(string input)//total file
         file2.close();
        }
 
+       cout<<"\nDecision tree: "<<endl;
+       float temp[13];
+       int count=0;
+       decisionTree("test.txt");
+        for(itr=0;itr<userPerGroup;itr++){
+            for(itr2=0;itr2<13;itr2++){
+                temp[13]=test[itr].information[itr2];
+                bool output=decision(temp);
+                if((output==true && temp[12]==1) || (output==false && temp[12]==0))
+                    count++;
+            }
+        }
+
+        float rate=count/userPerGroup;
+        cout<<"Rate of fold "<<i+1<<" is: "<<rate<<"%"<<endl;
+
         //regression
-        cout<<"Multi variate regression:"<<endl;
+        cout<<"\nMultiple regrssion:";
         float *regressionOutput=regressionFunc("train.txt");
-        float rate=validation(regressionOutput,"test.txt");
-        cout<<"\nRate of fold "<<i+1<<" is: "<<rate<<"%"<<endl;
-
-        //decision tree
-        cout<<"Decision tree:"<<endl;
-
+        float rate2=validation(regressionOutput,"test.txt");
+        cout<<"Rate of fold "<<i+1<<" is: "<<rate2<<"%"<<endl;
 
 
 //        cout<<"Train dataset: "<<endl;
